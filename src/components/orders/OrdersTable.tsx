@@ -1,10 +1,10 @@
 import React from 'react';
-import type { Order } from '@/lib/ordersType';
+import type { Item, Order } from '@/lib/ordersType';
 import { cn } from '@/lib/utils';
 import { MoreVertical } from 'lucide-react';
 
 interface OrdersTableProps {
-  orders: Order[];
+  orders:  Order[];
 }
 
 export default function OrdersTable({ orders }: OrdersTableProps) {
@@ -68,6 +68,9 @@ export default function OrdersTable({ orders }: OrdersTableProps) {
                   </td>
                   <td className="px-6 py-4 font-medium text-slate-700">
                     {order.totalPrice} EGP
+                  </td>
+                   <td className="px-6 py-4 font-medium text-slate-700">
+                    {order.items.map((item:Item)=>item?.product?.name)} EGP
                   </td>
                   <td className="px-6 py-4">
                     <span className={cn(

@@ -1,6 +1,9 @@
-import React from 'react';
+'use client'
+import React, { useCallback, useEffect, useState } from 'react';
 import { ShoppingBag, DollarSign, Package, User, ArrowUpRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getOrders } from '@/services/orderService';
+import { getProducts } from '@/services/productService';
 
 interface StatCardProps {
   title: string;
@@ -51,11 +54,39 @@ export function StatCard({ title, value, change, icon: Icon, colorScheme }: Stat
 }
 
 export function StatsCards() {
+  const [order,setOrders] =useState<number>(0)
+  const [products,setProducts]=useState<number>(0)
+ const fetchOrders = useCallback(async () => {
+    try {
+     
+      const data = await getOrders();
+      setOrders(data.pagination?.totalOrders);
+    } catch (err) {
+      console.log(err);
+      
+    } 
+  }, [order]);
+const fetchProducts=useCallback(async()=>{
+try {
+  const data=await getProducts()
+  setProducts(data?.totalProducts)
+} catch (error) {
+  
+}
+},[])
+  useEffect(()=>{
+    fetchOrders()
+    fetchProducts()
+  },[order,products])
+
+
+
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
       <StatCard 
         title="Orders" 
-        value="128" 
+        value={String(order)} 
         change="+12%" 
         icon={ShoppingBag} 
         colorScheme="purple" 
@@ -69,7 +100,7 @@ export function StatsCards() {
       />
       <StatCard 
         title="Products" 
-        value="200" 
+        value={String(products)} 
         change="+5%" 
         icon={Package} 
         colorScheme="blue" 
@@ -82,5 +113,4 @@ export function StatsCards() {
         colorScheme="orange" 
       />
     </div>
-  );
-}
+  )};

@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from 'react';
-import { createProduct, type CreateProductPayload } from '@/services/productService';
 import AddProductForm from './AddProductForm';
 import { X } from 'lucide-react';
 
@@ -25,12 +24,6 @@ export default function AddProductDialog({ isOpen, onClose, onSuccess }: AddProd
       document.body.style.overflow = 'unset';
     };
   }, [isOpen, onClose]);
-
-  const handleCreate = async (data: CreateProductPayload) => {
-    await createProduct(data);
-    onSuccess();
-    onClose();
-  };
 
   if (!isOpen) return null;
 
@@ -60,7 +53,7 @@ export default function AddProductDialog({ isOpen, onClose, onSuccess }: AddProd
         </div>
         
         <div className="p-6 overflow-y-auto max-h-[80vh]">
-          <AddProductForm onSubmit={handleCreate} />
+          <AddProductForm onSuccess={onSuccess} onClose={onClose} />
         </div>
       </div>
     </div>

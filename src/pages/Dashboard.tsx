@@ -1,4 +1,3 @@
-import React from 'react';
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { StatsCards } from '@/components/dashboard/StatsCards';
 import { RecentOrders } from '@/components/dashboard/RecentOrders';

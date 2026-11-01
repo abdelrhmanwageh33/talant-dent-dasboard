@@ -4,28 +4,21 @@ import type { Order } from '@/lib/ordersType';
 import OrdersHeader from '@/components/orders/OrdersHeader';
 import OrdersTable from '@/components/orders/OrdersTable';
 import { Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 export default function Orders() {
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
 
-  const fetchOrders = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const data = await getOrders();
-      setOrders(data.orders || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load orders');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const fetchOrders = async (): Promise<Order[]> => {
+  const data = await getOrders();
 
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+  return data.orders || [];
+};
+const { data, isLoading, error, refetch } = useQuery({
+  queryKey: ["orders"],
+  queryFn: fetchOrders,
+  staleTime: 1000 * 60 * 5,
+});
 
   return (
     <div>
@@ -38,16 +31,16 @@ export default function Orders() {
         </div>
       ) : error ? (
         <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 text-center">
-          <p className="mb-4 font-medium">{error}</p>
+          <p className="mb-4 font-medium">{error?.message}</p>
           <button 
-            onClick={fetchOrders}
+            onClick={()=>refetch}
             className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium transition-colors"
           >
             Retry
           </button>
         </div>
       ) : (
-        <OrdersTable orders={orders} />
+        <OrdersTable orders={data ?? []} />
       )}
     </div>
   );

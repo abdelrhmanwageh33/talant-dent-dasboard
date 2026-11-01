@@ -1,78 +1,78 @@
-import React, { useEffect, useState } from 'react';
 import { getCategories } from '@/services/categoryService';
 import type { Category } from '@/lib/categoriesType';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 interface ProductFilterProps {
   activeCategory: string | null;
   onSelectCategory: (slug: string | null) => void;
 }
 
-export default function ProductFilter({ activeCategory, onSelectCategory }: ProductFilterProps) {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function ProductFilter({
+  activeCategory,
+  onSelectCategory,
+}: ProductFilterProps) {
+  const fetchCategories = async (): Promise<Category[]> => {
+    const data = await getCategories();
+    return data;
+  };
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const data = await getCategories();
-        setCategories(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load categories');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCategories();
-  }, []);
-
-  if (error) {
-    return <div className="text-sm text-red-600 mb-6 font-medium">{error}</div>;
-  }
+  const {
+    data: categories,
+    isLoading,
+    isError,
+  } = useQuery({
+    queryKey: ['categories'],
+    queryFn: fetchCategories,
+    staleTime: 1000 * 60 * 10,
+  });
 
   return (
-    <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2 scrollbar-hide">
-      <span className="text-sm font-semibold text-slate-700 mr-2 shrink-0">Category:</span>
-      
-      {isLoading ? (
-        <div className="flex items-center gap-2 text-slate-500">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          <span className="text-sm">Loading categories...</span>
-        </div>
-      ) : (
-        <>
-          <button
-            onClick={() => onSelectCategory(null)}
+    <div className="mb-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h3 className="text-sm font-semibold text-slate-900">
+          Filter by category
+        </h3>
+
+        <p className="text-xs text-slate-500">
+          Choose a category to filter products
+        </p>
+      </div>
+
+      <div className="w-full sm:w-56">
+        {isLoading ? (
+          <div className="flex h-10 items-center justify-center rounded-xl border border-slate-200 bg-slate-50">
+            <Loader2 className="h-4 w-4 animate-spin text-[#7a5af8]" />
+          </div>
+        ) : isError ? (
+          <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+            Failed to load categories
+          </div>
+        ) : (
+          <select
+            value={activeCategory ?? ''}
+            onChange={(e) =>
+              onSelectCategory(e.target.value || null)
+            }
             className={cn(
-              "px-4 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0",
-              activeCategory === null
-                ? "bg-[#7a5af8] text-white"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              'h-10 w-full rounded-xl border border-slate-200',
+              'bg-white px-3 text-sm text-slate-700',
+              'outline-none transition-all',
+              'focus:border-[#7a5af8] focus:ring-2 focus:ring-[#7a5af8]/10',
+              'cursor-pointer'
             )}
           >
-            All
-          </button>
-          {categories.map((category) => (
-            <button
-              key={category._id}
-              onClick={() => onSelectCategory(category.slug)}
-              className={cn(
-                "px-4 py-1.5 rounded-full text-sm font-medium transition-colors shrink-0",
-                activeCategory === category.slug
-                  ? "bg-[#7a5af8] text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-              )}
-            >
-              {category.slug}
-            </button>
-          ))}
-        </>
-      )}
+            <option value="">All Products</option>
+
+            {categories?.map((category) => (
+              <option key={category._id} value={category.slug}>
+                {category.slug}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
     </div>
   );
 }

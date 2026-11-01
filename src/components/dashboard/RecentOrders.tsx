@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { MoreVertical, ChevronRight } from 'lucide-react';
 import { mockOrders } from '@/lib/mock/dashboard';
 import { cn } from '@/lib/utils';
+import type { Order } from '@/lib/ordersType';
+import { getOrders } from '@/services/orderService';
 
 export function RecentOrders() {
   const getStatusStyles = (status: string) => {
@@ -16,7 +18,14 @@ export function RecentOrders() {
         return 'bg-slate-100 text-slate-600';
     }
   };
-
+  const [orders,setOrders]=useState<Order[]>()
+const fetchOrders=useCallback(async()=>{
+const data=await getOrders()
+setOrders(data?.orders)
+},[])
+useEffect(()=>{
+  fetchOrders()
+},[orders])
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/50 mb-8 overflow-hidden">
       <div className="flex items-center justify-between mb-6">
@@ -40,26 +49,26 @@ export function RecentOrders() {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {mockOrders.map((order) => (
-              <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
-                <td className="py-4 text-[#7a5af8] font-medium">{order.id}</td>
+            {orders?.map((order) => (
+              <tr key={order?._id} className="hover:bg-slate-50/50 transition-colors">
+                <td className="py-4 text-[#7a5af8] font-medium">{order?._id}</td>
                 <td className="py-4">
                   <div className="flex items-center gap-3">
                     <img 
-                      src={order.customer.avatar} 
-                      alt={order.customer.name} 
+                      src="https://i.pravatar.cc/150?u=1" 
+                      alt={order?.customer?.name} 
                       className="w-8 h-8 rounded-full bg-slate-200"
                     />
                     <span className="font-medium text-slate-700">{order.customer.name}</span>
                   </div>
                 </td>
-                <td className="py-4 text-slate-700">{order.amount}</td>
+                <td className="py-4 text-slate-700">{order?.totalPrice}</td>
                 <td className="py-4">
                   <span className={cn("px-3 py-1 rounded-full text-xs font-semibold", getStatusStyles(order.status))}>
                     {order.status}
                   </span>
                 </td>
-                <td className="py-4 text-slate-600">{order.date}</td>
+                <td className="py-4 text-slate-600">{order?.createdAt}</td>
                 <td className="py-4 text-right">
                   <button className="p-1 text-slate-400 hover:text-slate-600 rounded-md">
                     <MoreVertical size={18} />

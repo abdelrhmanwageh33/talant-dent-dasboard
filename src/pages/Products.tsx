@@ -7,32 +7,26 @@ import ProductSearch from '@/components/products/ProductSearch';
 import ProductFilter from '@/components/products/ProductFilter';
 import AddProductDialog from '@/components/products/AddProductDialog';
 import { Loader2 } from 'lucide-react';
+import { useQueries, useQuery } from '@tanstack/react-query';
 
 export default function Products() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const fetchProducts = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
+  const fetchProducts = (async ():Promise<Product[]> => {
+    
       const data = activeCategory 
         ? await getProductsByCategory(activeCategory)
         : await getProducts();
-      setProducts(data.products || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load products');
-    } finally {
-      setIsLoading(false);
-    }
-  }, [activeCategory]);
 
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+        return data?.products ??[]
+    
+  });
+const {data,isLoading,isError,refetch}=useQuery({
+  queryKey:["products",activeCategory],
+  queryFn:fetchProducts
+})
+ 
 
   return (
     <div>
@@ -52,18 +46,18 @@ export default function Products() {
           <Loader2 className="w-8 h-8 text-[#7a5af8] animate-spin mb-4" />
           <p className="text-slate-500 font-medium">Loading products...</p>
         </div>
-      ) : error ? (
+      ) : isError ? (
         <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 text-center">
-          <p className="mb-4 font-medium">{error}</p>
+          <p className="mb-4 font-medium">{isError}</p>
           <button 
-            onClick={fetchProducts}
+            onClick={()=>refetch}
             className="px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-medium transition-colors"
-          >
+          > 
             Retry
           </button>
         </div>
       ) : (
-        <ProductsTable products={products} onRefresh={fetchProducts} />
+        <ProductsTable products={data??[]} onRefresh={fetchProducts} />
       )}
 
       <AddProductDialog
