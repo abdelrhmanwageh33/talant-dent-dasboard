@@ -36,9 +36,15 @@ export async function getProductsByCategory(slug: string): Promise<Products> {
 }
 
 export interface UpdateProductPayload {
+  name?: string;
+  description?: string;
+  image?: string;
   price?: number;
   discount?: number;
   stock?: number;
+  brand?: string;
+  category?: string;
+  featured?: boolean;
   isBestSeller?: boolean;
   isNewArrival?: boolean;
   active?: boolean;

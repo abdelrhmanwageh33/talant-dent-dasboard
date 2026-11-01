@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import type { Product } from '@/lib/productType';
-import { updateProduct, type UpdateProductPayload } from '@/services/productService';
 import EditProductForm from './EditProductForm';
 import { X } from 'lucide-react';
 
@@ -28,12 +27,6 @@ export default function EditProductDialog({ product, isOpen, onClose, onSuccess 
     };
   }, [isOpen, onClose]);
 
-  const handleUpdate = async (data: UpdateProductPayload) => {
-    await updateProduct(product._id, data);
-    onSuccess();
-    onClose();
-  };
-
   if (!isOpen) return null;
 
   return (
@@ -47,12 +40,17 @@ export default function EditProductDialog({ product, isOpen, onClose, onSuccess 
       {/* Modal */}
       <div 
         ref={modalRef}
-        className="relative bg-white rounded-2xl shadow-xl w-full max-w-md flex flex-col overflow-hidden"
+        className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col overflow-hidden"
       >
         <div className="flex items-center justify-between p-6 border-b border-slate-100">
-          <h2 className="text-lg font-bold text-slate-800">
-            Edit {product.name}
-          </h2>
+          <div>
+            <h2 className="text-lg font-bold text-slate-800">
+              Edit Product
+            </h2>
+            <p className="text-xs text-slate-500 truncate max-w-xs sm:max-w-sm">
+              {product.name}
+            </p>
+          </div>
           <button 
             onClick={onClose}
             className="text-slate-400 hover:text-slate-600 transition-colors rounded-full p-1 hover:bg-slate-100"
@@ -62,7 +60,12 @@ export default function EditProductDialog({ product, isOpen, onClose, onSuccess 
         </div>
         
         <div className="p-6 overflow-y-auto max-h-[80vh]">
-          <EditProductForm product={product} onSubmit={handleUpdate} />
+          <EditProductForm
+            key={product._id}
+            product={product}
+            onSuccess={onSuccess}
+            onClose={onClose}
+          />
         </div>
       </div>
     </div>
